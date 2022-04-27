@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"math"
 	"math/big"
 )
 
@@ -35,10 +34,6 @@ func ValueToBytes(source interface{}) ([]byte, error) {
 		return Uint64ToBytes(dest), nil
 	case uint:
 		return Uint64ToBytes(uint64(dest)), nil
-	case float32:
-		return Float32ToBytes(dest), nil
-	case float64:
-		return Float64ToBytes(dest), nil
 	case bool:
 		return BoolToBytes(dest), nil
 	case *big.Int:
@@ -215,30 +210,6 @@ func BytesToUint64(b []byte) uint64 {
 	var tmp uint64
 	binary.Read(bytesBuffer, binary.BigEndian, &tmp)
 	return tmp
-}
-
-func Float32ToBytes(float float32) []byte {
-	bits := math.Float32bits(float)
-	bytes := make([]byte, 4)
-	binary.BigEndian.PutUint32(bytes, bits)
-	return bytes
-}
-
-func BytesToFloat32(bytes []byte) float32 {
-	bits := binary.BigEndian.Uint32(bytes)
-	return math.Float32frombits(bits)
-}
-
-func Float64ToBytes(float float64) []byte {
-	bits := math.Float64bits(float)
-	bytes := make([]byte, 8)
-	binary.BigEndian.PutUint64(bytes, bits)
-	return bytes
-}
-
-func BytesToFloat64(bytes []byte) float64 {
-	bits := binary.BigEndian.Uint64(bytes)
-	return math.Float64frombits(bits)
 }
 
 func BoolToBytes(b bool) []byte {
