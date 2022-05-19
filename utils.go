@@ -13,7 +13,9 @@ import (
 func ValueToBytes(source interface{}) ([]byte, error) {
 	switch dest := source.(type) {
 	case string:
-		return []byte(dest), nil
+		return StringToBytes(dest), nil
+	case int:
+		return IntToBytes(dest), nil
 	case int8:
 		return Int8ToBytes(dest), nil
 	case int16:
@@ -22,8 +24,8 @@ func ValueToBytes(source interface{}) ([]byte, error) {
 		return Int32ToBytes(dest), nil
 	case int64:
 		return Int64ToBytes(dest), nil
-	case int:
-		return Int64ToBytes(int64(dest)), nil
+	case uint:
+		return UintToBytes(dest), nil
 	case uint8:
 		return Uint8ToBytes(dest), nil
 	case uint16:
@@ -32,8 +34,6 @@ func ValueToBytes(source interface{}) ([]byte, error) {
 		return Uint32ToBytes(dest), nil
 	case uint64:
 		return Uint64ToBytes(dest), nil
-	case uint:
-		return Uint64ToBytes(uint64(dest)), nil
 	case bool:
 		return BoolToBytes(dest), nil
 	case *big.Int:
@@ -44,6 +44,14 @@ func ValueToBytes(source interface{}) ([]byte, error) {
 		return dest, nil
 	}
 	return nil, errors.New(fmt.Sprintf("ToBytes function not support %v", source))
+}
+
+func StringToBytes(s string) []byte {
+	return []byte(s)
+}
+
+func BytesToString(b []byte) string {
+	return string(b)
 }
 
 func IntToBytes(n int) []byte {
@@ -116,11 +124,33 @@ func Uint64ToBytes(n uint64) []byte {
 	return bytesBuffer.Bytes()
 }
 
+func BytesToInt(b []byte) int {
+	if len(b) >= 32 {
+		n := big.NewInt(0)
+		n.SetBytes(b)
+		return int(n.Int64())
+	}
+	if len(b) < 4 {
+		b = append(make([]byte, 4-len(b)), b...)
+	} else {
+		b = b[len(b)-4:]
+	}
+	bytesBuffer := bytes.NewBuffer(b)
+	var tmp int
+	binary.Read(bytesBuffer, binary.BigEndian, &tmp)
+	return tmp
+}
+
 func BytesToInt8(b []byte) int8 {
 	if len(b) >= 32 {
 		n := big.NewInt(0)
 		n.SetBytes(b)
 		return int8(n.Int64())
+	}
+	if len(b) < 1 {
+		b = append(make([]byte, 1-len(b)), b...)
+	} else {
+		b = b[len(b)-1:]
 	}
 	bytesBuffer := bytes.NewBuffer(b)
 	var tmp int8
@@ -134,6 +164,11 @@ func BytesToInt16(b []byte) int16 {
 		n.SetBytes(b)
 		return int16(n.Int64())
 	}
+	if len(b) < 2 {
+		b = append(make([]byte, 2-len(b)), b...)
+	} else {
+		b = b[len(b)-2:]
+	}
 	bytesBuffer := bytes.NewBuffer(b)
 	var tmp int16
 	binary.Read(bytesBuffer, binary.BigEndian, &tmp)
@@ -145,6 +180,11 @@ func BytesToInt32(b []byte) int32 {
 		n := big.NewInt(0)
 		n.SetBytes(b)
 		return int32(n.Int64())
+	}
+	if len(b) < 4 {
+		b = append(make([]byte, 4-len(b)), b...)
+	} else {
+		b = b[len(b)-4:]
 	}
 	bytesBuffer := bytes.NewBuffer(b)
 	var tmp int32
@@ -158,8 +198,30 @@ func BytesToInt64(b []byte) int64 {
 		n.SetBytes(b)
 		return n.Int64()
 	}
+	if len(b) < 8 {
+		b = append(make([]byte, 8-len(b)), b...)
+	} else {
+		b = b[len(b)-8:]
+	}
 	bytesBuffer := bytes.NewBuffer(b)
 	var tmp int64
+	binary.Read(bytesBuffer, binary.BigEndian, &tmp)
+	return tmp
+}
+
+func BytesToUint(b []byte) uint {
+	if len(b) >= 32 {
+		n := big.NewInt(0)
+		n.SetBytes(b)
+		return uint(n.Uint64())
+	}
+	if len(b) < 4 {
+		b = append(make([]byte, 4-len(b)), b...)
+	} else {
+		b = b[len(b)-4:]
+	}
+	bytesBuffer := bytes.NewBuffer(b)
+	var tmp uint
 	binary.Read(bytesBuffer, binary.BigEndian, &tmp)
 	return tmp
 }
@@ -169,6 +231,11 @@ func BytesToUint8(b []byte) uint8 {
 		n := big.NewInt(0)
 		n.SetBytes(b)
 		return uint8(n.Uint64())
+	}
+	if len(b) < 1 {
+		b = append(make([]byte, 1-len(b)), b...)
+	} else {
+		b = b[len(b)-1:]
 	}
 	bytesBuffer := bytes.NewBuffer(b)
 	var tmp uint8
@@ -182,6 +249,11 @@ func BytesToUint16(b []byte) uint16 {
 		n.SetBytes(b)
 		return uint16(n.Uint64())
 	}
+	if len(b) < 2 {
+		b = append(make([]byte, 2-len(b)), b...)
+	} else {
+		b = b[len(b)-2:]
+	}
 	bytesBuffer := bytes.NewBuffer(b)
 	var tmp uint16
 	binary.Read(bytesBuffer, binary.BigEndian, &tmp)
@@ -193,6 +265,11 @@ func BytesToUint32(b []byte) uint32 {
 		n := big.NewInt(0)
 		n.SetBytes(b)
 		return uint32(n.Uint64())
+	}
+	if len(b) < 4 {
+		b = append(make([]byte, 4-len(b)), b...)
+	} else {
+		b = b[len(b)-4:]
 	}
 	bytesBuffer := bytes.NewBuffer(b)
 	var tmp uint32
@@ -206,6 +283,11 @@ func BytesToUint64(b []byte) uint64 {
 		n.SetBytes(b)
 		return n.Uint64()
 	}
+	if len(b) < 8 {
+		b = append(make([]byte, 8-len(b)), b...)
+	} else {
+		b = b[len(b)-8:]
+	}
 	bytesBuffer := bytes.NewBuffer(b)
 	var tmp uint64
 	binary.Read(bytesBuffer, binary.BigEndian, &tmp)
@@ -213,12 +295,18 @@ func BytesToUint64(b []byte) uint64 {
 }
 
 func BoolToBytes(b bool) []byte {
+	tmp := bool(b)
 	buf := bytes.NewBuffer([]byte{})
-	binary.Write(buf, binary.BigEndian, b)
+	binary.Write(buf, binary.BigEndian, tmp)
 	return buf.Bytes()
 }
 
 func BytesToBool(b []byte) bool {
+	if len(b) < 1 {
+		b = append(make([]byte, 1-len(b)), b...)
+	} else {
+		b = b[len(b)-1:]
+	}
 	bytesBuffer := bytes.NewBuffer(b)
 	var tmp bool
 	binary.Read(bytesBuffer, binary.BigEndian, &tmp)
