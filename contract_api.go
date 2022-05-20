@@ -1,5 +1,7 @@
 package contract_api
 
+import "math/big"
+
 // Context 合约运行时的上下文
 type Context interface {
 	// GetState 通过 key 从 StateDB 中获取对应到 Value
@@ -7,9 +9,10 @@ type Context interface {
 	// SetState 设置 k-v 到 StateDB 中
 	SetState(key []byte, value []byte)
 	// GetBalance 获取给定地址的余额
-	GetBalance(Address) uint64
-	// Transfer 从 from 向 to 发送数量为 amount 的金额
-	Transfer(from, to Address, amount uint64)
+	GetBalance(Address) *big.Int
+	// Transfer 从 from 向 to 发送数量为 amount 的金额，发生错误返回 error
+	// 本方法只会进行 from 余额是否足够，to 的金额是否会越界的校验
+	Transfer(from, to Address, amount *big.Int) error
 	// This 返回当前合约的地址
 	This() Address
 	// EmitEvent 发送事件
@@ -24,7 +27,7 @@ type Context interface {
 	// GasLimit 返回当前区块 gas 限额
 	GasLimit() uint64
 	// Number 返回当前区块号
-	Number() uint64
+	Number() *big.Int
 	// Timestamp 返回当前区块以秒计的时间戳
 	Timestamp() uint64
 
@@ -37,7 +40,7 @@ type Context interface {
 	// Sig 返回当前调用的函数名
 	Sig() []byte
 	// Value 返回随消息发送的金额
-	Value() uint64
+	Value() *big.Int
 
 	// Origin 返回交易的发起者（完全的调用链）
 	Origin() Address

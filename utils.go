@@ -37,7 +37,7 @@ func ValueToBytes(source interface{}) ([]byte, error) {
 	case bool:
 		return BoolToBytes(dest), nil
 	case *big.Int:
-		return dest.Bytes(), nil
+		return BigIntToBytes(dest), nil
 	case Address:
 		return dest.Bytes(), nil
 	case []byte:
@@ -122,6 +122,13 @@ func Uint64ToBytes(n uint64) []byte {
 	bytesBuffer := bytes.NewBuffer([]byte{})
 	binary.Write(bytesBuffer, binary.BigEndian, tmp)
 	return bytesBuffer.Bytes()
+}
+
+func BigIntToBytes(n *big.Int) []byte {
+	if n == nil {
+		return nil
+	}
+	return n.Bytes()
 }
 
 func BytesToInt(b []byte) int {
@@ -292,6 +299,10 @@ func BytesToUint64(b []byte) uint64 {
 	var tmp uint64
 	binary.Read(bytesBuffer, binary.BigEndian, &tmp)
 	return tmp
+}
+
+func BytesToBigInt(b []byte) *big.Int {
+	return big.NewInt(0).SetBytes(b)
 }
 
 func BoolToBytes(b bool) []byte {
