@@ -55,10 +55,7 @@ func BytesToString(b []byte) string {
 }
 
 func IntToBytes(n int) []byte {
-	tmp := int(n)
-	bytesBuffer := bytes.NewBuffer([]byte{})
-	binary.Write(bytesBuffer, binary.BigEndian, tmp)
-	return bytesBuffer.Bytes()
+	return Int32ToBytes(int32(n))
 }
 
 func Int8ToBytes(n int8) []byte {
@@ -90,10 +87,7 @@ func Int64ToBytes(n int64) []byte {
 }
 
 func UintToBytes(n uint) []byte {
-	tmp := uint(n)
-	bytesBuffer := bytes.NewBuffer([]byte{})
-	binary.Write(bytesBuffer, binary.BigEndian, tmp)
-	return bytesBuffer.Bytes()
+	return Uint32ToBytes(uint32(n))
 }
 
 func Uint8ToBytes(n uint8) []byte {
@@ -132,20 +126,7 @@ func BigIntToBytes(n *big.Int) []byte {
 }
 
 func BytesToInt(b []byte) int {
-	if len(b) >= 32 {
-		n := big.NewInt(0)
-		n.SetBytes(b)
-		return int(n.Int64())
-	}
-	if len(b) < 4 {
-		b = append(make([]byte, 4-len(b)), b...)
-	} else {
-		b = b[len(b)-4:]
-	}
-	bytesBuffer := bytes.NewBuffer(b)
-	var tmp int
-	binary.Read(bytesBuffer, binary.BigEndian, &tmp)
-	return tmp
+	return int(BytesToInt32(b))
 }
 
 func BytesToInt8(b []byte) int8 {
@@ -217,20 +198,7 @@ func BytesToInt64(b []byte) int64 {
 }
 
 func BytesToUint(b []byte) uint {
-	if len(b) >= 32 {
-		n := big.NewInt(0)
-		n.SetBytes(b)
-		return uint(n.Uint64())
-	}
-	if len(b) < 4 {
-		b = append(make([]byte, 4-len(b)), b...)
-	} else {
-		b = b[len(b)-4:]
-	}
-	bytesBuffer := bytes.NewBuffer(b)
-	var tmp uint
-	binary.Read(bytesBuffer, binary.BigEndian, &tmp)
-	return tmp
+	return uint(BytesToUint32(b))
 }
 
 func BytesToUint8(b []byte) uint8 {
