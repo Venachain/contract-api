@@ -22,8 +22,6 @@ type Context interface {
 
 	// BlockHash 返回指定区块的哈希
 	BlockHash(blockNumber uint64) string
-	// Coinbase 返回当前区块的提交者
-	Coinbase() Address
 	// GasLimit 返回当前区块 gas 限额
 	GasLimit() uint64
 	// Number 返回当前区块号
