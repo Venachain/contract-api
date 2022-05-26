@@ -6,7 +6,15 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/Venachain/contract-api/rlp"
 	"math/big"
+)
+
+// tx-type
+const (
+	CallContractFlag                 = 9
+	TxTypeCallSollGovmCompatibleWasm = 14
+	TxTypeCallSollWasmCompatibleGovm = 15
 )
 
 // ValueToBytes 其他类型转 []byte
@@ -55,10 +63,7 @@ func BytesToString(b []byte) string {
 }
 
 func IntToBytes(n int) []byte {
-	tmp := int(n)
-	bytesBuffer := bytes.NewBuffer([]byte{})
-	binary.Write(bytesBuffer, binary.BigEndian, tmp)
-	return bytesBuffer.Bytes()
+	return Int32ToBytes(int32(n))
 }
 
 func Int8ToBytes(n int8) []byte {
@@ -90,10 +95,7 @@ func Int64ToBytes(n int64) []byte {
 }
 
 func UintToBytes(n uint) []byte {
-	tmp := uint(n)
-	bytesBuffer := bytes.NewBuffer([]byte{})
-	binary.Write(bytesBuffer, binary.BigEndian, tmp)
-	return bytesBuffer.Bytes()
+	return Uint32ToBytes(uint32(n))
 }
 
 func Uint8ToBytes(n uint8) []byte {
@@ -132,20 +134,7 @@ func BigIntToBytes(n *big.Int) []byte {
 }
 
 func BytesToInt(b []byte) int {
-	if len(b) >= 32 {
-		n := big.NewInt(0)
-		n.SetBytes(b)
-		return int(n.Int64())
-	}
-	if len(b) < 4 {
-		b = append(make([]byte, 4-len(b)), b...)
-	} else {
-		b = b[len(b)-4:]
-	}
-	bytesBuffer := bytes.NewBuffer(b)
-	var tmp int
-	binary.Read(bytesBuffer, binary.BigEndian, &tmp)
-	return tmp
+	return int(BytesToInt32(b))
 }
 
 func BytesToInt8(b []byte) int8 {
@@ -217,20 +206,7 @@ func BytesToInt64(b []byte) int64 {
 }
 
 func BytesToUint(b []byte) uint {
-	if len(b) >= 32 {
-		n := big.NewInt(0)
-		n.SetBytes(b)
-		return uint(n.Uint64())
-	}
-	if len(b) < 4 {
-		b = append(make([]byte, 4-len(b)), b...)
-	} else {
-		b = b[len(b)-4:]
-	}
-	bytesBuffer := bytes.NewBuffer(b)
-	var tmp uint
-	binary.Read(bytesBuffer, binary.BigEndian, &tmp)
-	return tmp
+	return uint(BytesToUint32(b))
 }
 
 func BytesToUint8(b []byte) uint8 {
@@ -326,4 +302,77 @@ func BytesToBool(b []byte) bool {
 
 func InterfaceToBytes(v interface{}) ([]byte, error) {
 	return json.Marshal(v)
+}
+
+type SolInput struct {
+	FuncName   string   `json:"func_name"`
+	FuncParams []string `json:"func_params"`
+}
+
+type WasmInput struct {
+	TxType     int      `json:"-"`
+	FuncName   string   `json:"func_name"`
+	FuncParams []string `json:"func_params"`
+}
+
+type GovmInput struct {
+	TxType     int      `json:"-"`
+	FuncName   string   `json:"func_name"`
+	FuncParams []string `json:"func_params"`
+}
+
+// BuildGovmCallData 构建 govm 调用 govm 合约的 data/input
+// 调用例子：BuildWasmCallData(2, "test", IntToBytes(1), []byte("test1")])
+// 参数说明：
+//		2			: 交易类型
+//		"test"		: 被调用合约方法名
+//	IntToBytes(1)	: 被调用合约方法的第一个参数，参数类型为 int，实参的值为 1，传入时需要先转为 []byte
+//	[]byte("test1")	: 被调用合约方法的第二个参数，参数类型为 string，实参的值为 test1，传入时需要先转为 []byte
+func BuildGovmCallData(txType int, methodName string, params ...[]byte) ([]byte, error) {
+	paramArr := [][]byte{
+		IntToBytes(txType),
+		[]byte(methodName),
+	}
+	for _, v := range params {
+		paramArr = append(paramArr, v)
+	}
+	return rlp.EncodeToBytes(paramArr)
+}
+
+// BuildWasmCallData 构建 govm 调用 wasm 合约的 data/input
+// 调用例子：BuildWasmCallData(2, "test", "int(1)", "string(test1)")
+// 参数说明：
+//		2			: 交易类型
+//		"test"		: 被调用合约方法名
+//		"int(1)"	: 被调用合约方法的第一个参数，参数类型为 int，实参的值为 1
+//	"string(test1)"	: 被调用合约方法的第二个参数，参数类型为 string，实参的值为 test1
+func BuildWasmCallData(txType int, methodName string, params ...string) ([]byte, error) {
+	input := WasmInput{
+		TxType:     txType,
+		FuncName:   methodName,
+		FuncParams: nil,
+	}
+	var fnParams []string
+	for _, v := range params {
+		fnParams = append(fnParams, v)
+	}
+	input.FuncParams = fnParams
+	return json.Marshal(input)
+}
+
+// BuildEvmCallData 构建 govm 调用 solidity 合约的 data/input
+// 调用例子：BuildEvmCallData("test", "int(1)", "string(test1)")
+// 参数说明：
+//		"test"		: 被调用合约方法名
+//		"int(1)"	: 被调用合约方法的第一个参数，参数类型为 int，实参的值为 1
+//	"string(test1)"	: 被调用合约方法的第二个参数，参数类型为 string，实参的值为 test1
+func BuildEvmCallData(methodName string, params ...string) ([]byte, error) {
+	paramArr := [][]byte{
+		IntToBytes(TxTypeCallSollWasmCompatibleGovm),
+		[]byte(methodName),
+	}
+	for _, v := range params {
+		paramArr = append(paramArr, []byte(v))
+	}
+	return rlp.EncodeToBytes(paramArr)
 }

@@ -30,11 +30,11 @@ type Context interface {
 	Number() *big.Int
 	// Timestamp 返回当前区块以秒计的时间戳
 	Timestamp() uint64
+	// GasLeft 返回剩余 gas
+	GasLeft() uint64
 
 	// Data 返回当前调用完整的 calldata
 	Data() []byte
-	// GasLeft 返回剩余 gas
-	GasLeft() uint64
 	// Sender 返回当前调用的消息发送者
 	Sender() Address
 	// Sig 返回当前调用的函数名
@@ -44,6 +44,26 @@ type Context interface {
 
 	// Origin 返回交易的发起者（完全的调用链）
 	Origin() Address
+
+	// Call 直接调用
+	// 调用后 Context.Data、Context.Sender、Context.Sig、Context.Value 的值会修改为调用者，执行环境为被调用者的运行环境(合约的 storage)
+	// addr 目标合约地址
+	// param 调用目标合约的参数
+	// 调用成功返回被调用合约方法的返回值，失败返回 error
+	Call(addr string, param []byte) ([]byte, error)
+
+	// DelegateCall 代理调用
+	// 调用后 Context.Data、Context.Sender、Context.Sig、Context.Value 的值不会修改为调用者（注：会改为以太坊账户的地址）， 但执行环境为调用者的运行环境。
+	// addr 目标合约地址
+	// param 调用目标合约的参数
+	// 调用成功返回被调用合约方法的返回值，失败返回 error
+	DelegateCall(addr string, param []byte) ([]byte, error)
+
+	// HexToAddress 将字符地址转为 Address
+	HexToAddress(addr string) Address
+
+	// BytesToAddress 将字节数组转为 Address
+	BytesToAddress(addr []byte) Address
 }
 
 type Address interface {
