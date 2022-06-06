@@ -63,7 +63,7 @@ func BytesToString(b []byte) string {
 }
 
 func IntToBytes(n int) []byte {
-	return Int32ToBytes(int32(n))
+	return Int64ToBytes(int64(n))
 }
 
 func Int8ToBytes(n int8) []byte {
@@ -95,7 +95,7 @@ func Int64ToBytes(n int64) []byte {
 }
 
 func UintToBytes(n uint) []byte {
-	return Uint32ToBytes(uint32(n))
+	return Uint64ToBytes(uint64(n))
 }
 
 func Uint8ToBytes(n uint8) []byte {
@@ -134,7 +134,7 @@ func BigIntToBytes(n *big.Int) []byte {
 }
 
 func BytesToInt(b []byte) int {
-	return int(BytesToInt32(b))
+	return int(BytesToInt64(b))
 }
 
 func BytesToInt8(b []byte) int8 {
@@ -206,7 +206,7 @@ func BytesToInt64(b []byte) int64 {
 }
 
 func BytesToUint(b []byte) uint {
-	return uint(BytesToUint32(b))
+	return uint(BytesToUint64(b))
 }
 
 func BytesToUint8(b []byte) uint8 {
