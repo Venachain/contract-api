@@ -134,7 +134,19 @@ func BigIntToBytes(n *big.Int) []byte {
 }
 
 func BytesToInt(b []byte) int {
-	return int(BytesToInt64(b))
+	n := len(b)
+	switch n {
+	case 0:
+		return 0
+	case 1:
+		return int(BytesToInt8(b))
+	case 2:
+		return int(BytesToInt16(b))
+	case 4:
+		return int(BytesToInt32(b))
+	default:
+		return int(BytesToInt64(b))
+	}
 }
 
 func BytesToInt8(b []byte) int8 {
@@ -206,7 +218,19 @@ func BytesToInt64(b []byte) int64 {
 }
 
 func BytesToUint(b []byte) uint {
-	return uint(BytesToUint64(b))
+	n := len(b)
+	switch n {
+	case 0:
+		return 0
+	case 1:
+		return uint(BytesToUint8(b))
+	case 2:
+		return uint(BytesToUint16(b))
+	case 4:
+		return uint(BytesToUint32(b))
+	default:
+		return uint(BytesToUint64(b))
+	}
 }
 
 func BytesToUint8(b []byte) uint8 {
