@@ -15,8 +15,9 @@ type Context interface {
 	Transfer(from, to Address, amount *big.Int) error
 	// This 返回当前合约的地址
 	This() Address
-	// EmitEvent 发送事件
-	EmitEvent(topic string, code uint8, msg string)
+	// EmitEvent 触发自定义事件
+	// topic 是必须的，是自定义事件的方法名，params 是它的参数
+	EmitEvent(topic string, params ...string)
 	// Log 记录日志
 	Log(msg string)
 
