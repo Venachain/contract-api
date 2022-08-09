@@ -1,3 +1,3 @@
 module github.com/Venachain/contract-api
 
-go 1.13
+go 1.18
