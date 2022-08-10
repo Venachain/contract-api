@@ -32,6 +32,8 @@ type Context interface {
 	// GasLeft 返回剩余 gas
 	GasLeft() uint64
 
+	// TxHash 返回当前交易的哈希
+	TxHash() string
 	// Data 返回当前调用完整的 calldata
 	Data() []byte
 	// Sender 返回当前调用的消息发送者
